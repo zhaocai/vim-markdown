@@ -103,12 +103,19 @@ else
 endif
 
 if s:markdown_conceal =~# 'i'
-  syn region markdownItalic matchgroup=markdownItalicDelimiter start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=markdownLineStart concealends
-  syn region markdownItalic matchgroup=markdownItalicDelimiter start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=markdownLineStart concealends
+  syn region markdownItalic matchgroup=markdownItalicDelimiter start="\*\S\@=\(\(\_[^*]\|\_\s\*\)\{-}\n\s*\n\)\@!" end="\S\@<=\*" skip="\\\*" keepend contains=markdownLineStart concealends
+  syn region markdownItalic matchgroup=markdownItalicDelimiter start="_\S\@=\(\(\_[^_]\|\_\s_\)\{-}\n\s*\n\)\@!" end="\S\@<=_" skip="\\_" keepend contains=markdownLineStart concealends
 else
-  syn region markdownItalic start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=markdownLineStart
-  syn region markdownItalic start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=markdownLineStart
+  syn region markdownItalic start="\*\S\@=\(\(\_[^*]\|\_\s\*\)\{-}\n\s*\n\)\@!" end="\S\@<=\*" skip="\\\*" keepend contains=markdownLineStart
+  syn region markdownItalic start="_\S\@=\(\(\_[^_]\|\_\s_\)\{-}\n\s*\n\)\@!" end="\S\@<=_" skip="\\_" keepend contains=markdownLineStart
 endif
+" Explanation of italics pattern when token is '_':
+"   match start on '_' that is:
+"   * followed by a non-space character
+"   * NOT followed by two newline chars (separated by any non-newline whitespace) that are
+"   preceded by:
+"     * all non-'_' characters OR
+"     * an '_' that is ignored for ending italics ('_' preceded by whitespace)
 
 if s:markdown_conceal =~# 'b'
   syn region markdownBold matchgroup=markdownBolDelimiter start="\S\@<=\*\*\|\*\*\S\@=" end="\S\@<=\*\*\|\*\*\S\@=" keepend contains=markdownLineStart concealends
