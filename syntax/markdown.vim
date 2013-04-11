@@ -7,8 +7,24 @@ if exists("b:current_syntax")
   finish
 endif
 
+if !exists('main_syntax')
+  let main_syntax = 'markdown'
+endif
+
 runtime! syntax/html.vim
 unlet! b:current_syntax
+
+if !exists('g:markdown_fenced_languages')
+  let g:markdown_fenced_languages = []
+endif
+for s:type in map(copy(g:markdown_fenced_languages),'matchstr(v:val,"[^=]*$")')
+  if s:type =~ '\.'
+    let b:{matchstr(s:type,'[^.]*')}_subtype = matchstr(s:type,'\.\zs.*')
+  endif
+  exe 'syn include @markdownHighlight'.substitute(s:type,'\.','','g').' syntax/'.matchstr(s:type,'[^.]*').'.vim'
+  unlet! b:current_syntax
+endfor
+unlet! s:type
 
 " Let the user determine which markers to conceal and which not to conceal:
 "   #: headings, *: bullets, d: id declarations, l: links, a: automatic links,
@@ -24,6 +40,7 @@ endif
 
 " Decide whether to render list bullets as a proper bullet character.
 let s:conceal_bullets = (&encoding == 'utf-8' && s:markdown_conceal =~ '*')
+
 
 syn sync minlines=10
 syn case ignore
@@ -141,6 +158,13 @@ else
   syn region markdownCode matchgroup=markdownCodeDelimiter start="`" end="`" keepend contains=markdownLineStart
   syn region markdownCode matchgroup=markdownCodeDelimiter start="`` \=" end=" \=``" keepend contains=markdownLineStart
   syn region markdownCode matchgroup=markdownCodeDelimiter start="^\s*\zs```\s*\w*\ze\s*$" end="^```\ze\s*$" keepend
+endif
+
+if main_syntax ==# 'markdown'
+  for s:type in g:markdown_fenced_languages
+    exe 'syn region markdownHighlight'.substitute(matchstr(s:type,'[^=]*$'),'\..*','','').' matchgroup=markdownCodeDelimiter start="^\s*\zs```'.matchstr(s:type,'[^=]*').'$" end="^```\ze\s*$" keepend contains=@markdownHighlight'.substitute(matchstr(s:type,'[^=]*$'),'\.','','g')
+  endfor
+  unlet! s:type
 endif
 
 syn match markdownEscape "\\[][\\`*_{}()#+.!-]"
